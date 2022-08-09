@@ -1,6 +1,10 @@
 Part B
+	![alt text](../Part_B.jpg)
+
 	This part of pgp takes cryptics (ce_inclusion and ce_extension), skiptics (exon_skip) and IR events lists (in csv format) and generates AA (and other files) fasta files for each event type.
+	
 	Please note that for ce_inclusion events list, we use different cutoffs to make sure all events in this list are counted as ce_inclusion events. In some cases we might need to perform new coverage calculations for an event for which this was not already done in Part A of the pipeline (this usually happen when new events are added in this list)
+	
 	All AA fasta files (one for each of the event type) are merged to a single AA fasta (and other files) as explained below. This step is must to generate PEAKS compatible AA fast file and other files for backmapping algorithm.
 
 CONCATENATION OF AA fasta FiLES FROM ALL EVENT TYPES
