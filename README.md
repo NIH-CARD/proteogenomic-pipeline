@@ -1,11 +1,15 @@
-# <div style="text-align: center;">Automated Proteogenomic Pipeline</div>
-The automated proteogenomici pipeline identifies **de novo** peptide sequences from a set of **user-provided mis-spliced junction coordinates**. It identifies **cryptics, skiptic and intron retention** events from a list (csv file) of mis-spliced events (given as chr, start, end, strand and gene_id) and **automatically** generates sashimi plots for all and category-wise splicing events. It also creates peptides (amino acid sequences (AA-seq)) and nucleotides sequences (nt-seq) for each events type as well as all events AA-seq fasta file (and nt-seq fasta, events csv etc) for **PEAKS search** and finally **cross validates** (Backmapping) PEAKS identified peptides to the respective event type it belongs. It also generate sashimi plots overlaid with AA sequence for each validated event (please see backmapping section for example [here](####Backmapped_Events_Examples)). A general workflow of the Automated Proteogenomic Pipeline is shown in the Figure below.
+# <div style="text-align: center;">Automated Proteogenomic Pipeline (for Biomarker Discovery)</div>
+#### Please note that Part A of this pipeline has been used for our Manuscript (Link to be updated soon).
+#### Supplementary Material for the publication can be found [here](https://drive.google.com/drive/folders/1bcxiN5S1eeGca-zxm6uzZC0Bfbcy6rUf?usp=share_link).
+
+The automated proteogenomic pipeline identifies **de novo** peptide sequences from a set of **user-provided mis-spliced junction coordinates**. It identifies **cryptics, skiptics and intron retention** events from a list (csv file) of mis-spliced events **(given as chr_num, chr_start, chr_end, strand and gene_id)** and **automatically** generates sashimi plots (thanks to [ggsashimi](https://github.com/guigolab/ggsashimi) for all and category-wise splicing events. It also creates peptides (amino acid sequences (AA-seq)) and nucleotides sequences (nt-seq) as an AA-seq fasta file (and nt-seq fasta, events csv etc files) for **PEAKS search** and finally **cross validates** (Backmapping) PEAKS identified peptides to the respective event type it belongs. It also generate **sashimi plots overlaid with AA sequence for each validated event** (please see backmapping section for example [here](#another_cell)). A general workflow of the Automated Proteogenomic Pipeline is shown in the Figure below.
 
 ![Automated_Proteogenomic_Pipeline.png](Automated_Proteogenomic_Pipeline.png)
 
 **General workflow of the Automated Proteogenomic Pipeline**.
 
-This pipeline is comprised of **<font color='red'>3 parts: </font>**, Proteogenomic Pipeline (pgp)- A, Proteogenomic Pipeline (pgp)- B and Proteogenomic Pipeline (pgp)- C. **Part A** <font color='green'>generates sashimi plots (for all events), categorizes each event type and generates coverage bed files for all cryptic events </font>. It also generates a csv file for each of 
+This pipeline consits of three parts below labeled A, B and C. <br>
+**Part A** generates: <font color='green'> 1) Principal Transcripts List from knock-down/disease samples (from bam files), bam to bed files (for all bam files), 3) sashimi plots (for all events), 4) categorizes each event type and 5) coverage bed files for all cryptic events </font>. It also generates a csv file for each of 
 + CE_inclusion 
 + CE_extension
 + IR
@@ -14,30 +18,34 @@ This pipeline is comprised of **<font color='red'>3 parts: </font>**, Proteogeno
 
 events for user verification (hand-curation) to be used as input for Part B of the pipeline. An All_events_sashimi.pdf (containing sashimi plots for all events) and a Summary_stats.txt file is also generated. 
 
-**Part B** generates sashimi plots for all events in each of the hand-curated category and provides **<font color='green'>de novo</font>** amino acid (peptide) and nucleotide-sequences for each of these categories **(and generates a combined AA-seq fasta file of all event types for input to PEAKS search algorithm)**. 
+**Part B** allows user to iteratively change coverage cutoff to include all **hand-curated** Ce_inclusion generates sashimi plots for all events in each of the hand-curated category and provides **<font color='green'>de novo</font>** amino acid (peptide) and nucleotide-sequences for each of these categories **(and generates a combined AA-seq fasta file of all event types for input to PEAKS search algorithm)**. 
 
 Finally, **Part C** maps those **<font color='green'>de novo amino acid sequences which are also identified by mass spec</font>** onto sashimi plots. Below we describe each part of the pipeline.
 
-#### Please note that each part of the pipeline is self contained (<font color='red'>run from its own folder</font>), so all scripts and required files should be copied in the respective folder for each part.
+#### Please note that each part of the pipeline is self contained (<font color='red'>run from its own folder</font>), so all scripts and required files should be copied (or soft links should be created) in the respective folder for each part.
 
 # Proteogenomic Pipeline (pgp)- A
 Following Figure show the **workflow for part A**.
 ![Automated_Proteogenomic_Pipeline-A.png](Automated_Proteogenomic_Pipeline-A.png)
-**Proteogenomic Pipeline Part A.** Various opttions (0-4) to run each segment of the pipeline are shown in blue. <br><br>Optionally, <font color='red'> **Option 5** can be used to run pipeline from start to finish </font>.
+
+**Proteogenomic Pipeline Part A.** Various options (0-4) to run each segment of the pipeline are shown in blue. <br><br>Optionally, <font color='red'> **Option 5** can be used to run pipeline from start to finish </font>.
 
 ### Before you start
-This pipeline has several dependencies (including R and several R libraries). Before running this notebook, it is **<font color='red'>recommended to activate the conda environment built with all required depencencies</font>**. <br> **Example: conda activate pgp_env** where **pgp_env is the conda environment that contains all dependencies**.
+This pipeline has several dependencies (including several R libraries). An environment file (pgp_env.yml) containing all dependencies is also provided. <br>
+**It is recommended** that user should create a conda environment using: conda env create --file pgp_env.yml
+<br>Before running this notebook, please **<font color='red'>activate the conda environment</font>**. <br> **Example: conda activate pgp_env** where **pgp_env is the conda environment created above**.
 
 #### General Inputs
 User must provide the following input files
 
 <ul>
-<li>All sample (control and knowk down (KD)) .bam and .bai files.</li>
+<li>All sample (control and knock down (KD)) .bam and .bai files.</li>
 <li>all_bams.tsv: A TAB separated file containing path to bam files for control and KD samples with following columns:</li>
     - col1: unique_sample name, col2: path to bam file and clo3: Any string (e.g Control, this is also used for Y-Lables for sashimi plots)
 <li>Homo_sapiens.GRCh38.103.chr.sorted_new.gtf</li>
 <li>gencode.v38.annotation.gtf</li>
 <li>GRCh38.p13.genome.fa</li>
+<li>GRCh38_appris_data.principal.txt</li>
 </ul>
 
 
@@ -63,6 +71,7 @@ User must provide the following input files
 <li>get_orf_cds.R</li>
 <li>pgp-c_gc_aa.sh</li>
 <li>pgp-c_mappingV3.R</li>
+<li>merge_sashimis.py</li>
 </ul>   
 
 
@@ -111,8 +120,9 @@ pgp follow **three layered approach** to determine potential Transcript for each
 This part of the pipeline **expects all gtf files for KD samples in a folder called iPSC_gtfs** in current folder and **generates principal Transcripts list (principal_txs.csv file)** from these KD samples to be used in the next steps. 
 
 
-**Requires: all *.bam* files and gencode.v38.annotation.gtf**. 
+**Requires: all_bams.tsv (script looks for TDP43 string in column 3 to retrieve bam files path from column 2) and gencode.v38.annotation.gtf. **. 
 <br>**Scripts: pgp_a.sh**
+<br>**Tools: stringtie2
 <br>**Resources: 8 cores**
 
 ### Change directory to part-a of the pipeline
@@ -122,26 +132,21 @@ This part of the pipeline **expects all gtf files for KD samples in a folder cal
 %cd part-a
 ```
 
-    /Users/syedshah/Documents/DTI_WORK/MichaelLab/proteogenomic_pipeline/github_final_pgp/final_newdata_phaseV4/part-a
-
-
 
 ```python
 !nohup bash pgp-a.sh 0 > pgp-a-0.txt 2> pgp-a-0.error.txt
 ```
 
 ### Option 1:
-Generates sashimi plots for all splicing events (**provided that principal_txs.csv file from option 0 already exists).** <br> **Input: events csv file (selected_events.csv)** <br> **Scripts: pgp_0.sh, run_sashimi.sh, ggsashimi_txV4.py and TxEnsDB103_layeredV5.R** 
+Generates sashimi plots for all splicing events (**provided that principal_txs.csv file from option 0 already exists).** <br> **Input: events csv file (selected_events.csv)** <br> **Scripts: pgp_0.sh, run_sashimi.sh, ggsashimi_txV4.py, TxEnsDB103_layeredV6.R and merge_sashimis.py** <br> **Other: GRCh38_appris_data.principal.txt, Homo_sapiens.GRCh38.103.chr.sorted_new.gtf, palette.txt**
 
-**<font color="red">Please note that sashimi plots for all events are saved under folder all_events_sashimi as individual svg (which are then converted to pdf for convenience of copying coordinates to verify in IGV) file for each event as well as all_events_sashimi.pdf file containg all sashimi plots**</font>
-
-**Importnat: In some cases creation of svg or its conversion to pdf file fails, we recommend using -F pdf (this will only generate pdf files) option in run_sashimi.sh script under such situations**
+**<font color="red">Please note that sashimi plots for all events are saved under folder all_events_sashimi as individual pdf file for each event as well as all_sashimis.pdf file containg all sashimi plots**</font>
 
 **Resources: RAM requirement for this step scales with number of samples (BAM files) included for sashimi plots. For our case of 18 samples totaling ~180GB, a machine with 120GB of RAM is recommended.**
 
 
 ```python
-!nohup bash pgp-a.sh 1 selected_events.csv > pgp-a-1.txt 2> pgp-a-1.error.txt
+!nohup bash pgp-a.sh 1 new_sample2.csv > pgp-a-1.txt 2> pgp-a-1.error.txt
 ```
 
 ### All events Sashimi Plots
@@ -151,17 +156,19 @@ An example sashimi plot (from all sashimi plots for the events given in selected
 **Example sashimi plot 1. Read coverages for each sample are shown as layered graph (different shades) for Control (top panel) and KD samples (middle panel). Bottom panel (transcript lane) shows principal transcript in TDP-43 KD neurons and the coordinates of the mis-splicing event**
 
 ### Option 2:
-This option allows user to run both option 0 and 1 in a **single step**.
+This option allows user to run both option 0 and 1 in a **single step**. <br><br>
+
+**Important: Please make sure that all input files from option 0 and 1 are present in current folder.**
 
 **Resources: 8 cores. RAM requirement for this step scales with number of samples (BAM files) included for sashimi plots. For our case of 18 samples totaling ~180GB, a machine with 120GB of RAM is recommended.**
 
 
 ```python
-!nohup bash pgp-a.sh 2 majiq_rbp.csv > pgp-a-2.txt 2> pgp-a-2.error.txt
+!nohup bash pgp-a.sh 2 new_sample1.csv > pgp-a-2.txt 2> pgp-a-2.error.txt
 ```
 
 ### Option 3:
-Creates bed files (**in folder bam_beds under current folder**) for all BAM files (**all .bam and .bai files for all samples exists**). <br>
+Creates bed files (**in folder bam_beds under current folder**) for all BAM (read from all_bams.tsv) files (**all .bam and .bai files for all samples exists**). <br>
 **Scripts: pgp_0.sh**
 **Resources: This is memory intensive step and we recommend ~ 120GB RAM**.
 
@@ -176,7 +183,7 @@ Creates cryptics list (**called non_skiptics_events.csv in current folder**), co
 
 
 ```python
-!nohup bash pgp-a.sh 4 majiq_rbp.csv > pgp-a-4.txt 2> pgp-a-4.error.txt
+!nohup bash pgp-a.sh 4 new_sample1.csv > pgp-a-4.txt 2> pgp-a-4.error.txt
 ```
 
 ## Run all steps from start to finish
@@ -186,18 +193,16 @@ From start to finish. i.e create iPSC Tx list, sashimi plots for all splicing ev
 
 **Scripts: pgp_0.sh, TxEnsDB103_layeredV6.R, Auto_CoverV4_layered_intronV3.R and run_sashimi.sh**
 
-**<font color='red'>Did not run this option due to computational cost</font>**
-
-
+**Our benchmark testing** for 18 BAM samples totaling ~180GB, an 8 core machine with ~120GB of RAM would be required for this option for a total of ~2 days with ~100 splicing events. **<font color='red'>Please do not run this option due to heavy computational cost</font>**
 
 
 ```python
-!bash pgp-a.sh 5 majiq_rbp.csv > pgp-a-5.txt 2> pgp-a-5.error.txt
+!bash pgp-a.sh 5 new_sample.csv > pgp-a-5.txt 2> pgp-a-5.error.txt
 ```
 
 # <div id="pgp-b" style="text-align: center;"> Proteogenomic Pipeline (pgp) - B </div> <br> <div style="text-align: center;"> (Hand-curated CE events) </div>
 
-This part of the pipeline accepts **user modified list (for ce_inclusion, ce_extension and IR events)**  from Part-A of the pipeline and generates nt, AA fasta and events csv files for all event types. It processes hand curated ce events ce_inclusion_pgp1.csv and ce_extension_pgp1.csv and IR_pgp1.csv (based on list of ce events from part A, **please copy these files in folder part-b/ce_ext and part-c/ce_incl**) and applies variable coverage cutoff to **force all events in ce_inclusion_pgp1.csv to be ce_inclusion events** while ce_Extesnion and IR events are treated as as. **It also generates AA, nt and csv events files for skiptics events**
+This part of the pipeline accepts **user modified list (for ce_inclusion, ce_extension and IR events)**  from Part-A of the pipeline and generates nt, AA fasta and events csv files for all event types. It processes hand curated ce events list, ce_inclusion_pgp1.csv, ce_extension_pgp1.csv and IR_pgp1.csv (based on list of ce events from part A, **please copy these files in folder part-b/ce_ext and part-c/ce_incl**) and applies variable coverage cutoff to **force all events in ce_inclusion_pgp1.csv to be ce_inclusion events** while ce_Extesnion and IR events are treated as as. **It also generates AA, nt and csv events files for skiptics events**
 
 **Please note that this part of the pipeline will only work with those events whose coverage files are already calculcated from part-a (option 6)** <br> A general workflow of this part of the pipeline is shown in Figure 2.
 ![pgp-b.jpg](pgp-b.jpg)
@@ -214,12 +219,27 @@ This part of the pipeline accepts **user modified list (for ce_inclusion, ce_ext
 <li>check_aaV4_allFrames.R</li>
 <li>get_orf_cds.R</li>    
 <li>palette.txt</li>    
-<li>ggsashimi_txV3.py</li>   
+<li>ggsashimi_txV3.py</li>  
+<li>merge_sashimis.py</li>
 </ul>   
 
+#### General Inputs
+User must provide the following input files
+
+<ul>
+<li>All sample (control and knock down (KD)) .bam and .bai files</li>
+<li>pgp_b_ce_ir.sh (main script for IR events)</li>
+<li>all_bams.tsv: A TAB separated file containing path to bam files for control and KD samples with following columns:</li>
+    - col1: unique_sample name, col2: path to bam file and clo3: Any string (e.g Control, this is also used for Y-Lables for sashimi plots)
+<li>Homo_sapiens.GRCh38.103.chr.sorted_new.gtf</li>
+<li>gencode.v38.annotation.gtf</li>
+<li>GRCh38.p13.genome.fa</li>
+<li>GRCh38_appris_data.principal.txt</li>
+</ul>
 
 
-**<font color='red'> Please note that each step in part-B also generates sashimi plots</font>**
+
+**<font color='red'> Please note that each step in part-b also generates sashimi plots</font>**
 
 This part of the pipeline processes:
 <li> clean_combined_samples.csv for skiptic events </li>
@@ -228,21 +248,20 @@ This part of the pipeline processes:
 <li> IR_pgp1.csv events </li>
 <li> <font color='blue'> Merge AA, nt and csv files to generate PEAKS_AA.fasta (and various other) files for PEAKS search and downstream analysis</font></li>
 
-**<font color='red'> Please change directory to part-b/es folder</font>**
+**<font color='red'> Please change directory to part-b folder</font>**
 
 
 ```python
-%cd ../part-b
+%cd part-b
 ```
 
-    /Volumes/SYEDSHAH/MichaelLab/proteogenomic_pipeline/github_final_pgp/final_all_phasesV2/part-b
+### Now generate AA, nt and csv event file for all skiptics events in events_rbp.csv file
 
-
-### Now generate AA, nt and csv event file for all skiptics events in clean_combined_samples.csv file
+Using hand-curated events_rbp.csv (from part-a) containing skiptic events, this step will generate AA, nt fasta files as well as **sashimi plots** for these events.
 
 
 ```python
-!nohup bash pgp_b.sh majiq_rbp.csv > pgp_b_es.txt 2>pgp_b_es.error.txt
+!nohup bash pgp_b.sh new_sample.csv > pgp_b_es.txt 2>pgp_b_es.error.txt
 ```
 
 ### Skiptic events Sashimi Plots
@@ -251,20 +270,30 @@ An example sashimi plot for an exon_skip event (from the list of all sashimi plo
 ![ELAPOR1-chr1_109197654-109198572.png](ELAPOR1-chr1_109197654-109198572.png)
 **Example sashimi plot for an exon-skip event. Read coverages for each sample is shown as layered graph (different shades) for control (top panel) and KD samples (moddle panel). Bottom panel (transcript lane) shows the coordinates identified by the proteogenomic pipeline, principal transcript selected in TDP-43 KD neuron and the coordinates of the mis-splicing event.**
 
-### Now generate AA, nt and csv event files for all events in ce_inclusion_pgp1.csv <font color='red'> Iteratively </font>
+### <font color='red'>Iteratively</font> generate AA, nt and csv event files for all events in ce_inclusion_pgp1.csv  
+Using variable coverage cutoff value to identify intronic coordinate (where coverage drops below the cutoff value) for each event in the **hand-curated (ce_inclusion_pgp1.csv)** ce_inclusion events, this part of the pipeline allows user to vary coverage cutoff **iteratively** until all events (in the hand-curated list ce_inclusion_pgp1.csv) are selected as ce_inclusion events. After each iteration (for a given cutoff value) below, pipeline automatically generates:
+<li> A list of remaining events (remaining_events.csv file) that were not identified as ce_inclusion events and</li>
+<li> Total number of events that are identified as ce_inclusion event (printed at the end of Summary_stats.txt file in res_ce_cutoff folder)</li> <br>
+
+**Please use** this number as input (after $cutoff2 etc, for first iteration it should be 1). <br>
+
 **After running below script, please make sure to re-run it with remaining_events.csv file by adjusting cutoff value and num_events**
+
+**Sashimi plots** for all ce_inclusion events are also created in res_ce_cutoff/ce_incl_sashimi_plots folder.
+
+Please change value of the cutoff **Parameter** below accordingly.
 
 
 ```python
 cutoff1=0.6
-!nohup bash pgp_b.sh ce_inclusion_pgp1.csv $cutoff1 1 > pgp_b_ce_"$cutoff1".txt 2>pgp_b_ce_"$cutoff1".error.txt
+!nohup bash pgp_b.sh CE_inclusion_pgp2.csv $cutoff1 1 > pgp_b_ce_"$cutoff1".txt 2>pgp_b_ce_"$cutoff1".error.txt
 ```
 
 
 ```python
 !cp res_ce_"$cutoff1"/remaining_events.csv .
-cutoff2=0.15
-!bash pgp_b.sh remaining_events.csv $cutoff2 140 > pgp_b_ce_"$cutoff2".txt 2>pgp_b_ce_"$cutoff2".error.txt
+cutoff2=0.1
+!bash pgp_b.sh REMAINING_EVENTS.csv $cutoff2 140 > pgp_b_ce_"$cutoff2".txt 2>pgp_b_ce_"$cutoff2".error.txt
 ```
 
 ## Cryptics Sashimi Plots
@@ -276,11 +305,11 @@ An example sashimi plot (from all ce_inclusion events in all_non_skiptics.csv li
 
 ### Now generate AA, nt and csv event files for all events in ce_extension_pgp1.csv file
 
-**Please make sure to use appropriate num_events (from previous steps) while running next step**
+**Please make sure to use appropriate num_events (from previous steps) while running next step. *ext* here is a place holder signal the pipeline to deal all events in *ce_extension_pgp1.csv* file as ce_extension events** 
 
 
 ```python
-!nohup bash pgp_b.sh ce_extension_pgp1.csv ext 200 > pgp_b_ce_ext.txt 2>pgp_b_ce_ext.error.txt
+!nohup bash pgp_b.sh CE_extension_pgp1.csv ext 200 > pgp_b_ce_ext.txt 2>pgp_b_ce_ext.error.txt
 ```
 
 #### Ce_Extension Events
@@ -291,16 +320,14 @@ An example sashimi plot (from all ce_extension events in all_non_skiptics.csv li
 ## Now generate AA, nt and csv event files for all events in  IR_pgp1.csv file
 
 
+
 ```python
-%cd ../ce_ir
+%pwd
 ```
 
-    /Volumes/SYEDSHAH/MichaelLab/proteogenomic_pipeline/github_final_pgp/final_all_phases/part-b/ce_ir
-
-
 
 ```python
-!nohup bash pgp_b_ce_ir.sh IR_pgp1.csv > pgp_b_ce_ir.txt
+!nohup bash pgp_b_ce_ir.sh IR.csv > pgp_b_ce_ir.txt 2>pgp_b_ce_ir.error.txt
 ```
 
 ## Merge AA, nt and csv files
@@ -318,11 +345,8 @@ STEP1: CONCATENATE ce_inclusion files generated by 40% FOLLOWED by 15% cut off
 
 
 ```python
-%cd ../
+%pwd
 ```
-
-    /Volumes/SYEDSHAH/MichaelLab/proteogenomic_pipeline/github_final_pgp/final_all_phases/part-b
-
 
 #### First concatenate ce_inclusion files from all coverage_cutoff runs
 
@@ -338,10 +362,6 @@ for i in cov_cutoff:
     !cat "$folder"/cds_IGV_unique_ce_inclusion.csv >> temp/cds_merged_igv_inclusion.csv
     print(folder)
 ```
-
-    ce_incl/res_ce_0.6
-    ce_incl/res_ce_0.15
-
 
 **Step2: NOW CONCATENATE** 
 
@@ -368,7 +388,7 @@ for i in cov_cutoff:
 ![ "$(ls -A PEAKS/)" ] && rm PEAKS/*.*
 !mkdir -p PEAKS
 
-!cat temp/cds_PEAKS_aa_ce.fasta es/res_skiptics/cds_PEAKS_SKIPTICS_FUSED_AA.fasta ce_ir/res_ce_all/FINAL_IR_AA.fasta > PEAKS/PEAKS_AA.fasta
+!cat temp/cds_PEAKS_aa_ce.fasta es/res_skiptics/cds_PEAKS_SKIPTICS_FUSED_AA.fasta res_IR/FINAL_IR_AA.fasta > PEAKS/PEAKS_AA.fasta
 
 !cp temp/cds_merged_nt_ce.fasta PEAKS/.
 
@@ -380,11 +400,11 @@ for i in cov_cutoff:
 
 !cp es/res_skiptics/cds_skiptics_fused_transeq_in.fasta PEAKS/.
 
-!cp ce_ir/res_ce_all/FINAL_IR_AA.fasta PEAKS/.
+!cp res_IR/FINAL_IR_AA.fasta PEAKS/.
 
-!cp ce_ir/res_ce_all/IGV_unique_IR.csv PEAKS/.
+!cp res_IR/IR.csv PEAKS/.
 
-!cp ce_ir/res_ce_all/IR_coord_uniq_nt.transeq_in.fasta PEAKS/.
+!cp res_IR/IR_coord_uniq_nt.transeq_in.fasta PEAKS/.
 
 ```
 
@@ -392,9 +412,6 @@ for i in cov_cutoff:
 ```python
 %cd ../
 ```
-
-    /Volumes/SYEDSHAH/MichaelLab/proteogenomic_pipeline/github_final_pgp/final_all_phases
-
 
 # <div style="text-align: center;"> Proteogenomic Pipeline - C </div> <br><div style="text-align: center;"> (Mapping Peaks Results to event types) </div>
 PEAKS search provides a list of peptides identified as probable biomarkers. In order to identify which genomic regions (from splicing events) these peptides had originated, we have developed a set of bash and R scripts. Overall **workflow for this part** of the pipeline is shown in Figure 3.
@@ -429,15 +446,12 @@ PEAKS search provides a list of peptides identified as probable biomarkers. In o
 %cd part-c
 ```
 
-    /Volumes/SYEDSHAH/MichaelLab/proteogenomic_pipeline/github_final_pgp/final_all_phasesV3/part-c
-
-
 
 ```python
 !nohup bash pgp_c.sh > pgp_c.txt 2>pgp_c.error.txt
 ```
 
-#### Backmapped Events Examples
+#### <a id='another_cell'></a> Backmapped Events Examples 
 Example sashimi plots showing events mapped to up/downstream exon, up and downstream exon and ce region of the skiptic and cryptic events.
 
 ![KIF17-chr1-20686126-20690187-1.png](KIF17-chr1-20686126-20690187-1.png)
@@ -469,21 +483,11 @@ R Tools: GenomicFeatures, GenomicRanges, EnsDb.Hsapiens.v103
 General Tools: StringTie2, Bedtools, EMBOSS, Samtools 
 
 ## Compute Requirements
-We tested this pipeline on MAC and Linux OS. On a MAC with 16GB of RAM and quadcore processor, a data set comprising of 16 control and 9 KD samples (total -- GB data set) and an event list of 30, takes **~** hours to complete.
+We tested this pipeline on an 8 core machine with 120GB RAM for 18 samples totaling ~180GB. Part-A of the pipeline with start to finish takes **~2 days** to complete. Total time for Part-B and C is determined by the number events and is mostly taken by sashimi events.
 
 ## Convert to html file
 
 
 ```python
-#%cd ../
-!jupyter nbconvert --to html pgpV_newdata.ipynb
-```
-
-    [NbConvertApp] Converting notebook pgpV_newdata.ipynb to html
-    [NbConvertApp] Writing 636871 bytes to pgpV_newdata.html
-
-
-
-```python
-
+!jupyter nbconvert --to markdown pgp.ipynb 
 ```
